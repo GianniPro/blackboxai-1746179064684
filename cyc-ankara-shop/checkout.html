@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CYC Ankara - Checkout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-poppins text-gray-800">
+  <header class="bg-white shadow">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center animate-slide-in-left">
+      <h1 class="text-2xl font-bold text-indigo-700">CYC Ankara</h1>
+      <nav class="space-x-6 text-lg">
+        <a href="index.html" class="hover:text-indigo-900">Home</a>
+        <a href="materials.html" class="hover:text-indigo-900">Materials</a>
+        <a href="checkout.html" class="text-indigo-700 font-semibold">Checkout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-6 py-16 max-w-3xl">
+    <h2 class="text-4xl font-extrabold mb-8 text-center">Checkout</h2>
+    <form id="checkout-form" class="bg-white rounded-lg shadow p-8 space-y-6">
+      <div>
+        <label for="name" class="block font-semibold mb-2">Full Name</label>
+        <input type="text" id="name" name="name" required class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label for="address" class="block font-semibold mb-2">Address</label>
+        <textarea id="address" name="address" required class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+      </div>
+      <div>
+        <label for="phone" class="block font-semibold mb-2">Phone Number</label>
+        <input type="tel" id="phone" name="phone" required class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label for="email" class="block font-semibold mb-2">Email Address</label>
+        <input type="email" id="email" name="email" required class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label for="country" class="block font-semibold mb-2">Country of Residency</label>
+        <select id="country" name="country" required class="w-full border border-gray-300 rounded px-3 py-2">
+          <option value="">Select your country</option>
+          <option value="Nigeria">Nigeria</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="border-t pt-6">
+        <p class="text-lg font-semibold">Selected Material: <span id="selected-material">-</span></p>
+        <p class="text-lg font-semibold">Size (yards): <span id="selected-size">-</span></p>
+        <p class="text-lg font-semibold">Price: <span id="selected-price">₦0.00</span></p>
+        <p class="text-lg font-semibold">Shipping/Delivery Fee: <span id="fee">₦0.00</span></p>
+        <p class="text-xl font-bold mt-4">Total: <span id="total-price">₦0.00</span></p>
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-2">Payment Method</label>
+        <div class="space-y-2">
+          <label class="inline-flex items-center">
+            <input type="radio" name="payment" value="bank" required class="mr-2" />
+            Bank Transfer
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" name="payment" value="card" required class="mr-2" />
+            Card Payment
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-700 text-white py-3 rounded-lg font-semibold hover:bg-indigo-900 transition">
+        Complete Purchase
+      </button>
+    </form>
+
+    <div id="payment-instructions" class="mt-8 p-6 bg-white rounded-lg shadow hidden">
+      <h3 class="text-2xl font-bold mb-4">Payment Instructions</h3>
+      <p id="instructions-text" class="text-gray-700"></p>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t mt-20 py-6 text-center text-gray-600 text-sm">
+    &copy; 2024 CYC Ankara. All rights reserved.
+  </footer>
+
+  <script>
+    const currencySymbols = {
+      NGN: '₦',
+      USD: '$',
+      GBP: '£',
+      EUR: '€'
+    };
+
+    const shippingFeeNgn = 2000;
+    const deliveryFeeNgn = 1000;
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function updateSummary() {
+      const material = getQueryParam('material') || '-';
+      const size = getQueryParam('size') || '-';
+      const currency = getQueryParam('currency') || 'NGN';
+      const basePrices = {
+        silk: 5000,
+        ankara: 3000,
+        chiffon: 4000,
+        cotton: 2000
+      };
+      const currencyRates = {
+        NGN: 1,
+        USD: 0.0024,
+        GBP: 0.0020,
+        EUR: 0.0022
+      };
+
+      const basePrice = basePrices[material.toLowerCase()] || 3000;
+      const priceInNgn = basePrice * parseInt(size);
+      const priceConverted = priceInNgn * currencyRates[currency];
+      const symbol = currencySymbols[currency];
+
+      document.getElementById('selected-material').textContent = material.charAt(0).toUpperCase() + material.slice(1);
+      document.getElementById('selected-size').textContent = size;
+      document.getElementById('selected-price').textContent = symbol + priceConverted.toFixed(2);
+
+      const country = document.getElementById('country').value;
+      let fee = 0;
+      if (country === 'Nigeria') {
+        fee = deliveryFeeNgn * currencyRates[currency];
+      } else if (country === 'Other') {
+        fee = shippingFeeNgn * currencyRates[currency];
+      }
+      document.getElementById('fee').textContent = symbol + fee.toFixed(2);
+
+      const total = priceConverted + fee;
+      document.getElementById('total-price').textContent = symbol + total.toFixed(2);
+    }
+
+    document.getElementById('country').addEventListener('change', updateSummary);
+
+    document.getElementById('checkout-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+      const instructionsDiv = document.getElementById('payment-instructions');
+      const instructionsText = document.getElementById('instructions-text');
+
+      if (paymentMethod === 'bank') {
+        instructionsText.innerHTML = `
+          Please transfer the total amount to the following bank account:<br />
+          <strong>Bank:</strong> CYC Bank<br />
+          <strong>Account Number:</strong> 1234567890<br />
+          <strong>Account Name:</strong> CYC Ankara<br />
+          After payment, please send your payment confirmation to our email: payments@cycankara.com
+        `;
+      } else if (paymentMethod === 'card') {
+        instructionsText.innerHTML = `
+          Card payment is currently not integrated. Please use bank transfer for now.
+        `;
+      }
+      instructionsDiv.classList.remove('hidden');
+      window.scrollTo({ top: instructionsDiv.offsetTop, behavior: 'smooth' });
+    });
+
+    // Initialize summary on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateSummary();
+    });
+  </script>
+</body>
+</html>
