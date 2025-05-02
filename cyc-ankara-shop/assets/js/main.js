@@ -4,6 +4,29 @@ function getQueryParam(param) {
   return urlParams.get(param);
 }
 
+// Cart functions
+function getCart() {
+  const cart = localStorage.getItem('cycAnkaraCart');
+  return cart ? JSON.parse(cart) : [];
+}
+
+function saveCart(cart) {
+  localStorage.setItem('cycAnkaraCart', JSON.stringify(cart));
+}
+
+function addToCart(item) {
+  const cart = getCart();
+  // Check if item with same material and size exists, then increase quantity
+  const existingIndex = cart.findIndex(ci => ci.material === item.material && ci.size === item.size && ci.currency === item.currency);
+  if (existingIndex !== -1) {
+    cart[existingIndex].quantity += item.quantity;
+  } else {
+    cart.push(item);
+  }
+  saveCart(cart);
+  alert('Item added to cart!');
+}
+
 // Product page functionality
 function productPageInit() {
   const basePrices = {
@@ -27,6 +50,22 @@ function productPageInit() {
     EUR: '€'
   };
 
+  const materialImages = {
+    silk: 'https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=300',
+    ankara: 'https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=300',
+    chiffon: 'https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=300',
+    cotton: 'https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=300'
+  };
+
+  const descriptions = {
+    silk: 'Luxurious and smooth silk fabrics.',
+    ankara: 'Vibrant and colorful Ankara prints.',
+    chiffon: 'Light and sheer chiffon fabrics.',
+    cotton: 'Soft and breathable cotton materials.'
+  };
+
+  const suggestedMaterials = ['silk', 'ankara', 'chiffon', 'cotton'];
+
   function updatePrice() {
     const material = getQueryParam('material') || 'ankara';
     const size = parseInt(document.getElementById('size').value) || 1;
@@ -43,20 +82,35 @@ function productPageInit() {
   function updateMaterialInfo() {
     const material = getQueryParam('material') || 'ankara';
     const materialName = material.charAt(0).toUpperCase() + material.slice(1);
-    const descriptions = {
-      silk: 'Luxurious and smooth silk fabrics.',
-      ankara: 'Vibrant and colorful Ankara prints.',
-      chiffon: 'Light and sheer chiffon fabrics.',
-      cotton: 'Soft and breathable cotton materials.'
-    };
 
     document.getElementById('material-name').textContent = materialName;
     document.getElementById('material-description').textContent = descriptions[material.toLowerCase()] || '';
+    document.getElementById('material-image').src = materialImages[material.toLowerCase()] || '';
+    document.getElementById('material-image').alt = materialName + ' fabric';
+
     document.getElementById('checkout-link').href = `checkout.html?material=${material}&size=${document.getElementById('size').value}&currency=${document.getElementById('currency').value}`;
+
+    // Populate suggested materials except current
+    const suggestedContainer = document.getElementById('suggested-materials');
+    suggestedContainer.innerHTML = '';
+    suggestedMaterials.forEach(mat => {
+      if (mat !== material.toLowerCase()) {
+        const matName = mat.charAt(0).toUpperCase() + mat.slice(1);
+        const card = document.createElement('a');
+        card.href = `product.html?material=${mat}`;
+        card.className = 'block bg-white rounded-lg shadow hover:shadow-lg transition p-4 text-center card';
+        card.innerHTML = `
+          <img src="${materialImages[mat]}" alt="${matName} fabric" class="mx-auto mb-2 rounded max-h-32 object-contain" />
+          <h4 class="font-semibold">${matName}</h4>
+        `;
+        suggestedContainer.appendChild(card);
+      }
+    });
   }
 
   function populateSizeOptions() {
     const sizeSelect = document.getElementById('size');
+    sizeSelect.innerHTML = '';
     for (let i = 1; i <= 12; i++) {
       const option = document.createElement('option');
       option.value = i;
@@ -80,6 +134,25 @@ function productPageInit() {
       updatePrice();
       updateMaterialInfo();
     });
+
+    document.getElementById('add-to-cart').addEventListener('click', () => {
+      const material = getQueryParam('material') || 'ankara';
+      const size = parseInt(document.getElementById('size').value) || 1;
+      const currency = document.getElementById('currency').value;
+      const basePrice = basePrices[material.toLowerCase()] || 3000;
+      const priceInNgn = basePrice * size;
+      const currencyRate = currencyRates[currency];
+      const price = priceInNgn * currencyRate;
+
+      const item = {
+        material,
+        size,
+        currency,
+        price,
+        quantity: 1
+      };
+      addToCart(item);
+    });
   }
 }
 
@@ -96,41 +169,39 @@ function checkoutPageInit() {
   const deliveryFeeNgn = 1000;
 
   function updateSummary() {
-    const material = getQueryParam('material') || '-';
-    const size = getQueryParam('size') || '-';
-    const currency = getQueryParam('currency') || 'NGN';
-    const basePrices = {
-      silk: 5000,
-      ankara: 3000,
-      chiffon: 4000,
-      cotton: 2000
-    };
-    const currencyRates = {
+    const cart = getCart();
+    const currency = cart.length > 0 ? cart[0].currency : 'NGN';
+    const currencyRate = {
       NGN: 1,
       USD: 0.0024,
       GBP: 0.0020,
       EUR: 0.0022
-    };
-
-    const basePrice = basePrices[material.toLowerCase()] || 3000;
-    const priceInNgn = basePrice * parseInt(size);
-    const priceConverted = priceInNgn * currencyRates[currency];
+    }[currency];
     const symbol = currencySymbols[currency];
-
-    document.getElementById('selected-material').textContent = material.charAt(0).toUpperCase() + material.slice(1);
-    document.getElementById('selected-size').textContent = size;
-    document.getElementById('selected-price').textContent = symbol + priceConverted.toFixed(2);
 
     const country = document.getElementById('country').value;
     let fee = 0;
     if (country === 'Nigeria') {
-      fee = deliveryFeeNgn * currencyRates[currency];
+      fee = deliveryFeeNgn * currencyRate;
     } else if (country === 'Other') {
-      fee = shippingFeeNgn * currencyRates[currency];
+      fee = shippingFeeNgn * currencyRate;
     }
-    document.getElementById('fee').textContent = symbol + fee.toFixed(2);
 
-    const total = priceConverted + fee;
+    let subtotal = 0;
+    const cartList = document.getElementById('cart-list');
+    cartList.innerHTML = '';
+    cart.forEach((item, index) => {
+      const itemTotal = item.price * item.quantity;
+      subtotal += itemTotal;
+      const li = document.createElement('li');
+      li.className = 'mb-2 flex justify-between';
+      li.textContent = `${item.material.charAt(0).toUpperCase() + item.material.slice(1)} - ${item.size} yards x ${item.quantity} = ${symbol}${itemTotal.toFixed(2)}`;
+      cartList.appendChild(li);
+    });
+
+    const total = subtotal + fee;
+    document.getElementById('subtotal').textContent = symbol + subtotal.toFixed(2);
+    document.getElementById('fee').textContent = symbol + fee.toFixed(2);
     document.getElementById('total-price').textContent = symbol + total.toFixed(2);
   }
 
@@ -178,3 +249,4 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutPageInit();
   }
 });
+</create_file>
