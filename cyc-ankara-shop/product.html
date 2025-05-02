@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CYC Ankara - Product</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-poppins text-gray-800">
+  <header class="bg-white shadow">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center animate-slide-in-left">
+      <h1 class="text-2xl font-bold text-indigo-700">CYC Ankara</h1>
+      <nav class="space-x-6 text-lg">
+        <a href="index.html" class="hover:text-indigo-900">Home</a>
+        <a href="materials.html" class="hover:text-indigo-900">Materials</a>
+        <a href="checkout.html" class="hover:text-indigo-900">Checkout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-6 py-16 max-w-4xl">
+    <h2 id="material-name" class="text-4xl font-extrabold mb-6 text-center">Material</h2>
+    <div class="bg-white rounded-lg shadow p-8">
+      <p class="mb-4 text-gray-700" id="material-description">Description of the material.</p>
+      <div class="mb-6">
+        <label for="size" class="block font-semibold mb-2">Select size (yards):</label>
+        <select id="size" class="border border-gray-300 rounded px-3 py-2 w-full max-w-xs">
+          <!-- Options 1 to 12 will be added by JS -->
+        </select>
+      </div>
+      <div class="mb-6">
+        <p class="text-lg font-semibold">Price: <span id="price">₦0.00</span></p>
+        <p class="text-sm text-gray-600 mt-1">Currency: 
+          <select id="currency" class="border border-gray-300 rounded px-2 py-1">
+            <option value="NGN" selected>Naira (₦)</option>
+            <option value="USD">Dollar ($)</option>
+            <option value="GBP">Pound (£)</option>
+            <option value="EUR">Euro (€)</option>
+          </select>
+        </p>
+      </div>
+      <a href="checkout.html" id="checkout-link" class="inline-block bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-900 transition">
+        Proceed to Checkout
+      </a>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t mt-20 py-6 text-center text-gray-600 text-sm">
+    &copy; 2024 CYC Ankara. All rights reserved.
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
